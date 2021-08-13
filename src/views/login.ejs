@@ -1,0 +1,70 @@
+<%- include('partials/header'); -%>
+
+<form>
+    <h2>Login</h2>
+
+    <label for="email">Email</label>
+    <input name="email" type="email" required />
+    <div class="email error" name="emailError"></div>
+    
+    <label for="password">Password</label>
+    <input name="password" type="password" minLength='6' required />
+    <div class="password error"></div>
+
+    <button>login</button>
+</form>
+
+<script>
+    const form = document.querySelector("form");
+    const email = form.email;
+    const password = form.password;
+    const passwordDiv = document.querySelector(`.password`);
+    const emailDiv = document.querySelector('.email')
+    
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+ 
+        passwordDiv.innerText = '';
+        emailDiv.innerText = '';
+
+        try{ 
+            const res = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                        email: email.value, 
+                        password: password.value
+                    }),
+            })
+            
+            let data = await res.json()
+            console.log(data)
+            if ('error' in data){
+                if('errors' in data.error){
+                    const errors = data.error.errors;
+                    Object.keys(errors).map((key) => {
+                        const div = document.querySelector(`.${key}`);
+                        div.innerText = errors[key]
+                    })
+                }
+            }
+            
+            if(data.message){
+                alert(data.message)
+            }
+
+            if(data.token){
+                location.assign('/')
+            }
+
+        }catch(err){
+            console.error("error : " , err)
+        }
+        
+    });
+</script>
+
+<%- include('partials/footer'); -%>
